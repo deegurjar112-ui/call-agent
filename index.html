@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>24/7 AI Voice Receptionist — Live Client Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <!-- Official LiveKit WebRTC Browser SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #070B14;
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-glow: rgba(16, 185, 129, 0.3);
+      --emerald-primary: #10B981;
+      --emerald-glow: rgba(16, 185, 129, 0.4);
+      --emerald-dark: #059669;
+      --cyan-accent: #06B6D4;
+      --red-danger: #EF4444;
+      --red-glow: rgba(239, 68, 68, 0.4);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 100% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.08) 0%, transparent 45%);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 60px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34D399;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge-live .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #10B981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10B981;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 4.5vw, 2.5rem);
+      font-weight: 800;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #FFFFFF 30%, #94A3B8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subheadline {
+      color: var(--text-muted);
+      font-size: clamp(0.95rem, 2.5vw, 1.08rem);
+      line-height: 1.55;
+      max-width: 620px;
+    }
+
+    /* GLASS CARD */
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    }
+
+    /* PROMPTS CHIPS */
+    .chips-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chips-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chips-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chip-btn {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #CBD5E1;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .chip-btn:hover {
+      background: rgba(51, 65, 85, 0.7);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #FFFFFF;
+      transform: translateX(4px);
+    }
+
+    .chip-btn span.emoji {
+      font-size: 1.1rem;
+    }
+
+    /* CALL CONSOLE */
+    .call-console {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+      padding: 32px 20px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
+      border: 2px solid rgba(16, 185, 129, 0.4);
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .avatar-wrapper.active {
+      border-color: #10B981;
+      box-shadow: 0 0 45px rgba(16, 185, 129, 0.5), inset 0 0 20px rgba(16, 185, 129, 0.3);
+      animation: avatarBreath 2s infinite ease-in-out;
+    }
+
+    @keyframes avatarBreath {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .avatar-icon {
+      font-size: 2.5rem;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      transition: all 0.3s;
+    }
+
+    .status-badge.ready {
+      color: #94A3B8;
+    }
+
+    .status-badge.connecting {
+      color: #FBBF24;
+      border-color: rgba(251, 191, 36, 0.3);
+      background: rgba(251, 191, 36, 0.1);
+    }
+
+    .status-badge.live {
+      color: #34D399;
+      border-color: rgba(52, 211, 153, 0.4);
+      background: rgba(16, 185, 129, 0.12);
+    }
+
+    .call-timer {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      color: #94A3B8;
+      display: none;
+    }
+
+    .call-timer.visible {
+      display: block;
+    }
+
+    /* WAVEFORM BARS */
+    .waveform {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 38px;
+      opacity: 0.3;
+      transition: opacity 0.3s;
+    }
+
+    .waveform.active {
+      opacity: 1;
+    }
+
+    .bar {
+      width: 4px;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, #10B981, #06B6D4);
+      transition: height 0.1s ease;
+    }
+
+    .waveform.active .bar {
+      animation: wave 1.2s infinite ease-in-out;
+    }
+
+    .waveform.active .bar:nth-child(1) { animation-delay: 0.0s; }
+    .waveform.active .bar:nth-child(2) { animation-delay: 0.15s; }
+    .waveform.active .bar:nth-child(3) { animation-delay: 0.3s; }
+    .waveform.active .bar:nth-child(4) { animation-delay: 0.45s; }
+    .waveform.active .bar:nth-child(5) { animation-delay: 0.6s; }
+    .waveform.active .bar:nth-child(6) { animation-delay: 0.75s; }
+    .waveform.active .bar:nth-child(7) { animation-delay: 0.9s; }
+    .waveform.active .bar:nth-child(8) { animation-delay: 1.05s; }
+    .waveform.active .bar:nth-child(9) { animation-delay: 0.9s; }
+    .waveform.active .bar:nth-child(10) { animation-delay: 0.75s; }
+    .waveform.active .bar:nth-child(11) { animation-delay: 0.6s; }
+    .waveform.active .bar:nth-child(12) { animation-delay: 0.45s; }
+
+    @keyframes wave {
+      0%, 100% { height: 6px; }
+      50% { height: 34px; }
+    }
+
+    /* CALL BUTTONS */
+    .btn-action {
+      width: 100%;
+      max-width: 380px;
+      padding: 16px 28px;
+      border-radius: 16px;
+      font-size: 1.08rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      border: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: #FFFFFF;
+      box-shadow: 0 10px 25px -5px var(--emerald-glow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px -5px var(--emerald-glow);
+    }
+
+    .btn-start:active {
+      transform: translateY(1px);
+    }
+
+    .btn-end {
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      color: #FFFFFF;
+      box-shadow: 0 10px 25px -5px var(--red-glow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      display: none;
+    }
+
+    .btn-end:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px -5px var(--red-glow);
+    }
+
+    .btn-action:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* DISPATCH PREVIEW / SMS CRM PANEL */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+
+    .booking-count-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34D399;
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+
+    .bookings-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .bookings-container::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .bookings-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .booking-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      animation: slideIn 0.35s ease-out;
+      position: relative;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .booking-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .job-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34D399;
+    }
+
+    .booking-time {
+      font-size: 0.75rem;
+      color: #64748B;
+      font-family: var(--font-mono);
+    }
+
+    .booking-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 14px;
+      margin-top: 4px;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .detail-label {
+      font-size: 0.7rem;
+      color: #64748B;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .detail-value {
+      font-size: 0.88rem;
+      color: #F1F5F9;
+      font-weight: 600;
+    }
+
+    .empty-bookings {
+      text-align: center;
+      padding: 30px 20px;
+      color: #64748B;
+      font-size: 0.88rem;
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.78rem;
+      color: #64748B;
+      margin-top: 10px;
+    }
+
+    footer a {
+      color: #94A3B8;
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      .glass-card {
+        padding: 20px 16px;
+      }
+      .booking-details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- HEADER -->
+    <header>
+      <div class="badge-live">
+        <span class="pulse-dot"></span>
+        24/7 AI Receptionist • Live Demo
+      </div>
+      <h1>Test Our AI Voice Receptionist Live</h1>
+      <p class="subheadline">
+        Tap below and pretend you're a homeowner with a broken aircon, leaking pipe, electrical fault, or pest issue. See how Aria answers instantly and books the job while you're on the tools.
+      </p>
+    </header>
+
+    <!-- SAMPLE PROMPT CHIPS -->
+    <div class="glass-card chips-section">
+      <div class="chips-title">💡 What to say into your mic:</div>
+      <div class="chips-grid">
+        <button class="chip-btn" onclick="copyPrompt('Hi, my aircon stopped cooling and I am in Scarborough.')">
+          <span class="emoji">❄️</span>
+          <span>"Hi, my aircon stopped cooling and I'm in Scarborough."</span>
+        </button>
+        <button class="chip-btn" onclick="copyPrompt('I have a leaking hot water pipe, can someone come out today?')">
+          <span class="emoji">🔧</span>
+          <span>"I have a leaking hot water pipe, can someone come out today?"</span>
+        </button>
+        <button class="chip-btn" onclick="copyPrompt('We need a quote for a cockroach and spider treatment.')">
+          <span class="emoji">🕷️</span>
+          <span>"We need a quote for a cockroach and spider treatment."</span>
+        </button>
+        <button class="chip-btn" onclick="copyPrompt('How do you work for my business?')">
+          <span class="emoji">💼</span>
+          <span>"How do you work for my business?"</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN CALL CONSOLE -->
+    <div class="glass-card call-console">
+      <div class="avatar-wrapper" id="avatarWrapper">
+        <span class="avatar-icon">🎙️</span>
+      </div>
+
+      <div class="status-badge ready" id="statusBadge">
+        🟢 Ready to Call Aria
+      </div>
+
+      <div class="call-timer" id="callTimer">00:00</div>
+
+      <div class="waveform" id="waveform">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <button class="btn-action btn-start" id="btnStartCall" onclick="startCall()">
+        <span>📞 Start 30-Sec Live Demo Call</span>
+      </button>
+
+      <button class="btn-action btn-end" id="btnEndCall" onclick="endCall()">
+        <span>❌ End Call</span>
+      </button>
+    </div>
+
+    <!-- REAL-TIME DISPATCH / OWNER SMS NOTIFICATION PANEL -->
+    <div class="glass-card">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>📲 Lead Technician / Owner Dispatch Preview</span>
+        </div>
+        <span class="booking-count-pill" id="bookingCountPill">0 Jobs</span>
+      </div>
+      <p class="panel-subtitle">
+        As soon as you tell Aria to book the appointment during your call, the captured job appears here in real time—ready to be dispatched straight to your phone.
+      </p>
+
+      <div class="bookings-container" id="bookingsContainer">
+        <div class="empty-bookings">
+          Waiting for your first test booking... Speak with Aria above and give her a time slot to watch the booking appear live!
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      Powered by Aria Voice AI™ &bull; 24/7 Automated Trade Reception & Instant Job Dispatch
+    </footer>
+  </div>
+
+  <script>
+    let activeRoom = null;
+    let timerInterval = null;
+    let callSeconds = 0;
+    let pollInterval = null;
+    let lastBookingsJson = "";
+    const pageLoadTime = Date.now();
+    let callStartTime = null;
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function copyPrompt(text) {
+      navigator.clipboard?.writeText(text);
+      const badge = document.getElementById("statusBadge");
+      badge.textContent = "💡 Copied prompt! Say this when you call.";
+      setTimeout(() => {
+        if (!activeRoom) badge.textContent = "🟢 Ready to Call Aria";
+      }, 2500);
+    }
+
+    async function startCall() {
+      const btnStart = document.getElementById("btnStartCall");
+      const btnEnd = document.getElementById("btnEndCall");
+      const statusBadge = document.getElementById("statusBadge");
+      const avatarWrapper = document.getElementById("avatarWrapper");
+      const waveform = document.getElementById("waveform");
+      const callTimer = document.getElementById("callTimer");
+
+      btnStart.disabled = true;
+      statusBadge.className = "status-badge connecting";
+      statusBadge.textContent = "🟡 Connecting to Aria...";
+
+      // Unlock browser audio context on user interaction (Safari/Chrome autoplay policy)
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          const dummyCtx = new AudioCtx();
+          if (dummyCtx.state === 'suspended') {
+            await dummyCtx.resume();
+          }
+        }
+      } catch (audioUnlockErr) {
+        console.warn("Audio unlock note:", audioUnlockErr);
+      }
+
+      try {
+        callStartTime = Date.now();
+
+        // Request token from local token server
+        const res = await fetch("/api/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ caller_name: "Client Demo Tester" }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to get demo token from server");
+        }
+
+        const data = await res.json();
+        const { token, url, room: roomName } = data;
+
+        // Initialize LiveKit Room
+        const room = new LivekitClient.Room({
+          adaptiveStream: true,
+          dynacast: true,
+          audioCaptureDefaults: {
+            autoGainControl: true,
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+        });
+
+        activeRoom = room;
+
+        // Audio track subscription: plays Aria's voice naturally
+        room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, publication, participant) => {
+          if (track.kind === LivekitClient.Track.Kind.Audio) {
+            const audioElement = track.attach();
+            audioElement.id = "ariaAudioStream";
+            document.body.appendChild(audioElement);
+            audioElement.play().catch((err) => {
+              console.warn("Autoplay interaction note:", err);
+            });
+          }
+        });
+
+        room.on(LivekitClient.RoomEvent.TrackUnsubscribed, (track) => {
+          track.detach().forEach((el) => el.remove());
+        });
+
+        room.on(LivekitClient.RoomEvent.Disconnected, () => {
+          handleCallEnded();
+        });
+
+        // Connect WebRTC to LiveKit Cloud
+        await room.connect(url, token);
+
+        // Explicitly resume audio context for iOS Safari compatibility
+        try {
+          await room.startAudio();
+        } catch (audioErr) {
+          console.warn("room.startAudio() notice:", audioErr);
+        }
+
+        // Publish caller's microphone
+        await room.localParticipant.setMicrophoneEnabled(true);
+
+        // Update UI to Live state
+        btnStart.style.display = "none";
+        btnStart.disabled = false;
+        btnEnd.style.display = "inline-flex";
+
+        statusBadge.className = "status-badge live";
+        statusBadge.textContent = "🔴 Live Call Active — Speak into your mic!";
+        avatarWrapper.classList.add("active");
+        waveform.classList.add("active");
+
+        callSeconds = 0;
+        callTimer.textContent = "00:00";
+        callTimer.classList.add("visible");
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          callSeconds++;
+          const mins = String(Math.floor(callSeconds / 60)).padStart(2, "0");
+          const secs = String(callSeconds % 60).padStart(2, "0");
+          callTimer.textContent = `${mins}:${secs}`;
+        }, 1000);
+
+      } catch (err) {
+        console.error("Connection error:", err);
+        statusBadge.className = "status-badge ready";
+        statusBadge.textContent = "❌ Connection failed: " + (err.message || "Check mic permission");
+        btnStart.disabled = false;
+        btnStart.style.display = "inline-flex";
+        btnEnd.style.display = "none";
+      }
+    }
+
+    async function endCall() {
+      if (activeRoom) {
+        try {
+          await activeRoom.disconnect();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      handleCallEnded();
+    }
+
+    function handleCallEnded() {
+      activeRoom = null;
+      clearInterval(timerInterval);
+
+      // Clean up audio elements
+      const existing = document.getElementById("ariaAudioStream");
+      if (existing) existing.remove();
+
+      const btnStart = document.getElementById("btnStartCall");
+      const btnEnd = document.getElementById("btnEndCall");
+      const statusBadge = document.getElementById("statusBadge");
+      const avatarWrapper = document.getElementById("avatarWrapper");
+      const waveform = document.getElementById("waveform");
+      const callTimer = document.getElementById("callTimer");
+
+      btnStart.style.display = "inline-flex";
+      btnStart.disabled = false;
+      btnEnd.style.display = "none";
+
+      statusBadge.className = "status-badge ready";
+      statusBadge.textContent = "🟢 Ready to Call Aria";
+      avatarWrapper.classList.remove("active");
+      waveform.classList.remove("active");
+      callTimer.classList.remove("visible");
+    }
+
+    // POLL BOOKINGS FROM SERVER FOR LIVE CRM PREVIEW WITH SESSION PRIVACY
+    async function fetchBookings() {
+      try {
+        const sinceThreshold = callStartTime || pageLoadTime;
+        const res = await fetch(`/api/bookings?since=${sinceThreshold}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        // Filter on client side as an extra safeguard for caller privacy
+        const filteredBookings = (data.bookings || []).filter((b) => {
+          if (!b.booked_at) return true;
+          return new Date(b.booked_at).getTime() >= (sinceThreshold - 5000);
+        });
+
+        const currentJson = JSON.stringify(filteredBookings);
+        if (currentJson === lastBookingsJson) return;
+        lastBookingsJson = currentJson;
+
+        const container = document.getElementById("bookingsContainer");
+        const countPill = document.getElementById("bookingCountPill");
+
+        countPill.textContent = `${filteredBookings.length} Job${filteredBookings.length === 1 ? '' : 's'}`;
+
+        if (filteredBookings.length === 0) {
+          container.innerHTML = `
+            <div class="empty-bookings">
+              Waiting for your first test booking... Speak with Aria above and give her a time slot to watch the booking appear live!
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = filteredBookings
+          .map((b) => {
+            const dateStr = b.booked_at ? new Date(b.booked_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent';
+            return `
+              <div class="booking-card">
+                <div class="booking-card-top">
+                  <span class="job-badge">⚡ ${escapeHtml(b.status || 'CONFIRMED')}</span>
+                  <span class="booking-time">${escapeHtml(dateStr)}</span>
+                </div>
+                <div class="booking-details-grid">
+                  <div class="detail-item">
+                    <span class="detail-label">Customer Name</span>
+                    <span class="detail-value">${escapeHtml(b.customer_name || 'N/A')}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Mobile Number</span>
+                    <span class="detail-value">${escapeHtml(b.phone_number || 'N/A')}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Issue / Trade Service</span>
+                    <span class="detail-value">${escapeHtml(b.service_name || 'N/A')}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Suburb / Location</span>
+                    <span class="detail-value">${escapeHtml(b.suburb_or_location || 'N/A')}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Preferred Date</span>
+                    <span class="detail-value">${escapeHtml(b.date || 'N/A')}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Time Window</span>
+                    <span class="detail-value">${escapeHtml(b.time || 'N/A')}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      } catch (e) {
+        console.error("Bookings poll error:", e);
+      }
+    }
+
+    // Start polling every 1.5 seconds
+    fetchBookings();
+    pollInterval = setInterval(fetchBookings, 1500);
+  </script>
+</body>
+</html>
