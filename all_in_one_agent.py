@@ -59,6 +59,7 @@ from livekit.agents import (
     RunContext,
     TurnHandlingOptions,
     cli,
+    llm,
     room_io,
     text_transforms,
 )
