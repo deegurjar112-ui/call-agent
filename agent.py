@@ -94,13 +94,11 @@ class SmartBusinessVoiceAgent(Agent):
         )
 
     async def on_enter(self) -> None:
-        """Greet the caller warmly as soon as the call connects."""
-        self.session.generate_reply(
-            instructions=(
-                "Greet the caller warmly and naturally in 1 short sentence: "
-                "'Hi there! Thanks for calling our 24/7 Home Service desk, this is Aria—how can I help with your home or property today?'"
-            )
+        """Greet the caller warmly and immediately as soon as the call connects."""
+        self.session.say(
+            "Hi there! Thanks for calling our 24/7 Home Service desk, this is Aria—how can I help with your home or property today?"
         )
+
 
     @function_tool
     async def check_availability(
@@ -205,10 +203,17 @@ async def entrypoint(ctx: JobContext) -> None:
     else:
         stt_engine = openai.STT()
 
-    # Voice LLM: Google Gemini (gemini-3.8-flash) is active & verified with working API key
+    # Voice LLM: Google Gemini with automatic multi-model fallback (gemini-3.5-flash -> gemini-3.5-flash-lite -> gemini-3-flash-preview)
     if google_key and google is not None:
-        logger.info("Using Google Gemini LLM (gemini-3.8-flash)")
-        llm_engine = google.LLM(model="gemini-3.8-flash", api_key=google_key)
+        logger.info("Using Google Gemini LLM with multi-model fallback")
+        llm_engine = llm.FallbackAdapter(
+            [
+                google.LLM(model="gemini-3.5-flash", api_key=google_key),
+                google.LLM(model="gemini-3.5-flash-lite", api_key=google_key),
+                google.LLM(model="gemini-3-flash-preview", api_key=google_key),
+            ],
+            attempt_timeout=15.0,
+        )
     elif openai_key:
         logger.info("Using OpenAI LLM (gpt-4o-mini)")
         llm_engine = openai.LLM(model="gpt-4o-mini")
