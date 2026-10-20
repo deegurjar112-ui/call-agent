@@ -522,7 +522,7 @@
       </div>
       <h1>Test Our AI Voice Receptionist Live</h1>
       <p class="subheadline">
-        Tap below and pretend you're a homeowner with a broken aircon, leaking pipe, electrical fault, or pest issue. See how Aria answers instantly and books the job while you're on the tools.
+        Tap below and speak naturally into your phone or laptop. Ask for pricing on your vehicle (PPF, Ceramic Coating, Tint) or test Aria with an appointment booking.
       </p>
     </header>
 
@@ -530,21 +530,21 @@
     <div class="glass-card chips-section">
       <div class="chips-title">💡 What to say into your mic:</div>
       <div class="chips-grid">
-        <button class="chip-btn" onclick="copyPrompt('Hi, my aircon stopped cooling and I am in Scarborough.')">
-          <span class="emoji">❄️</span>
-          <span>"Hi, my aircon stopped cooling and I'm in Scarborough."</span>
+        <button class="chip-btn" onclick="copyPrompt('How much for full front PPF on my 2024 Porsche GT3?')">
+          <span class="emoji">🏎️</span>
+          <span>"How much for full front PPF on my 2024 Porsche GT3?"</span>
         </button>
-        <button class="chip-btn" onclick="copyPrompt('I have a leaking hot water pipe, can someone come out today?')">
-          <span class="emoji">🔧</span>
-          <span>"I have a leaking hot water pipe, can someone come out today?"</span>
+        <button class="chip-btn" onclick="copyPrompt('I want a quote for 5-year ceramic coating and window tint.')">
+          <span class="emoji">✨</span>
+          <span>"I want a quote for 5-year ceramic coating and window tint."</span>
         </button>
-        <button class="chip-btn" onclick="copyPrompt('We need a quote for a cockroach and spider treatment.')">
-          <span class="emoji">🕷️</span>
-          <span>"We need a quote for a cockroach and spider treatment."</span>
+        <button class="chip-btn" onclick="copyPrompt('Can I book an appointment for tomorrow at 9 AM?')">
+          <span class="emoji">📅</span>
+          <span>"Can I book an appointment for tomorrow at 9 AM?"</span>
         </button>
-        <button class="chip-btn" onclick="copyPrompt('How do you work for my business?')">
+        <button class="chip-btn" onclick="copyPrompt('How do you work for my business and capture leads?')">
           <span class="emoji">💼</span>
-          <span>"How do you work for my business?"</span>
+          <span>"How do you work for my business and capture leads?"</span>
         </button>
       </div>
     </div>
@@ -698,6 +698,8 @@
           if (track.kind === LivekitClient.Track.Kind.Audio) {
             const audioElement = track.attach();
             audioElement.id = "ariaAudioStream";
+            audioElement.setAttribute("playsinline", "true");
+            audioElement.setAttribute("autoplay", "true");
             document.body.appendChild(audioElement);
             audioElement.play().catch((err) => {
               console.warn("Autoplay interaction note:", err);
@@ -845,20 +847,20 @@
                     <span class="detail-value">${escapeHtml(b.phone_number || 'N/A')}</span>
                   </div>
                   <div class="detail-item">
-                    <span class="detail-label">Issue / Trade Service</span>
+                    <span class="detail-label">Vehicle / Model</span>
+                    <span class="detail-value" style="color: #60A5FA;">${escapeHtml(b.vehicle_model || 'N/A')}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Service Requested</span>
                     <span class="detail-value">${escapeHtml(b.service_name || 'N/A')}</span>
                   </div>
                   <div class="detail-item">
-                    <span class="detail-label">Suburb / Location</span>
-                    <span class="detail-value">${escapeHtml(b.suburb_or_location || 'N/A')}</span>
+                    <span class="detail-label">Location / Suburb</span>
+                    <span class="detail-value">${escapeHtml(b.suburb_or_location || 'Scottsdale')}</span>
                   </div>
                   <div class="detail-item">
-                    <span class="detail-label">Preferred Date</span>
-                    <span class="detail-value">${escapeHtml(b.date || 'N/A')}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">Time Window</span>
-                    <span class="detail-value">${escapeHtml(b.time || 'N/A')}</span>
+                    <span class="detail-label">Scheduled Slot</span>
+                    <span class="detail-value">${escapeHtml(b.date || 'TBD')} at ${escapeHtml(b.time || 'TBD')}</span>
                   </div>
                 </div>
               </div>

@@ -66,38 +66,42 @@ def save_appointment_record(record: dict):
 
 class SmartBusinessVoiceAgent(Agent):
     """
-    Expert AI Voice Front-Desk Coordinator for Home-Service & Trade Businesses
-    (Air Conditioning/HVAC, Plumbing & Gas, Electrical, Roofing, Pest Control, Cleaning).
+    Expert AI Voice Front-Desk Coordinator for Scottsdale Premier Auto Detailing & Trade Services.
     """
 
     def __init__(self) -> None:
         super().__init__(
             instructions=(
-                "You are 'Aria' (Aria), a friendly, sharp, and top-tier human front-desk coordinator "
-                "for a premier 24/7 Home-Service & Trade Business (Air Conditioning/HVAC, Plumbing & Gas, "
-                "Electrical, Roofing/Gutters, Pest Control, Cleaning, and Garage Doors). "
-                "You speak fluent, natural English, and can seamlessly speak Hindi or Hinglish if the caller speaks it. "
+                "CRITICAL VOICE RULE: Output plain spoken English words ONLY. "
+                "Never use markdown, asterisks (*), bullet points, emojis, or special symbols. "
+                "Write prices as spoken words when needed, like 'fifteen hundred dollars' instead of '$1,500' so the voice sounds 100% smooth. "
+                "You are 'Aria', a friendly, sharp, and top-tier front-desk coordinator for Scottsdale Premier Auto Studio & Services in Scottsdale, Arizona. "
                 "CRITICAL HUMAN SPEECH RULES: "
-                "1. Always output all words using the standard English Latin alphabet (even if speaking Hindi/Hinglish, write in Romanized English letters like 'Bilkul, main abhi check karti hoon'—NEVER output Devanagari script so the English TTS engine pronounces every word clearly). "
-                "2. Keep every turn to 1 or 2 short, crisp sentences (under 22 words max). You are on a live phone call—NEVER recite monologues. "
-                "3. Sound warm, calm, empathetic, and reassuring (use natural phrases like 'no problem at all', 'we can definitely sort that out', 'bilkul', 'zaroor'). "
-                "4. NEVER speak emojis, markdown symbols, asterisks, bullet points, or list numbers. "
-                "5. STRICT RULE: ASK ONE QUESTION AT A TIME. Never ask for multiple details together. Follow this natural human flow: "
-                "   - Step A: Empathize with their problem in 1 sentence and ask their suburb or location (e.g., 'Oh, a struggling aircon in this heat is no fun—we can definitely help. What suburb are you in?'). "
-                "   - Step B: Once they give the suburb, offer two specific time windows (e.g., 'We have a technician near you today at 2:30 PM or tomorrow at 9:00 AM—which suits you better?'). "
-                "   - Step C: Once they pick a time, ask for their first name and best mobile number to send the confirmation. "
-                "   - Step D: As soon as you have name, phone, issue, suburb, and time, call the book_appointment tool and confirm warmly that the job details were sent straight to the lead technician. "
-                "6. LOCAL SLANG & TERMS: Understand Australian trade terms ('aircon', 'suburb', 'sparky', 'hot water unit', 'retic', 'tradie') and Dubai/UAE terms ('villa', 'community'). "
-                "7. If a business owner testing the demo asks 'How do you work for my business?', explain naturally: "
-                "'Whenever you're on the tools, on another call, or after hours, I pick up in one second, chat with your customer just like we're talking now, and text the job details straight to your phone. Go ahead and test me like a real customer with a broken aircon or leaking pipe!' "
-                "8. For severe emergencies (gas leaks, active electrical sparking, massive burst pipes), immediately call transfer_to_specialist."
+                "1. Keep every turn to 1 or 2 short, crisp sentences (under 22 words max). You are on a live phone call—NEVER recite monologues or lists. "
+                "2. Sound warm, calm, empathetic, and professional like an experienced Scottsdale coordinator. "
+                "3. STRICT RULE: ASK ONE QUESTION AT A TIME. Never ask for multiple details together. "
+                "4. VEHICLE & SERVICE PRICING KNOWLEDGE: "
+                "   - If asked about full front PPF on a 2024 Porsche GT3: Quote 'Full front PPF on your Porsche GT3 ranges between eighteen ninety-five and twenty-two ninety-five dollars, covering the bumper, hood, fenders, and mirrors in self-healing film.' Then ask if they want to schedule an open bay this week. "
+                "   - Track Package PPF: twenty-eight hundred to thirty-two hundred dollars. "
+                "   - Full Car PPF: six thousand to seventy-five hundred dollars. "
+                "   - Ceramic Coating: twelve hundred to fifteen hundred dollars for five-year, or eighteen hundred to twenty-two hundred dollars for seven-year pro coating. "
+                "   - Ceramic Window Tint: three ninety-five to five ninety-five dollars with high heat rejection for Arizona summers. "
+                "   - Paint Correction & Detailing: seven fifty to nine hundred dollars. "
+                "   - Home & property trade services (HVAC, plumbing, electrical): Warmly confirm we can dispatch our vetted trade specialists. "
+                "5. HOW YOU WORK FOR THE BUSINESS: "
+                "If a shop owner testing the demo asks 'How do you work for my business?', explain naturally: "
+                "'Whenever you are in the shop, on another call, or after hours, I pick up in one second, answer pricing questions, and text the qualified lead straight to your phone. Go ahead and test me like a real customer!' "
+                "6. BOOKING FLOW: "
+                "   - Step A: Acknowledge their car model or issue in 1 sentence and offer two specific time slots (e.g. 'We have an open bay today at two thirty or tomorrow morning at nine. Which works better for you?'). "
+                "   - Step B: Ask for their first name and mobile number to confirm the booking. "
+                "   - Step C: Call book_appointment with customer name, phone, vehicle model, service, date, and time, and warmly confirm."
             )
         )
 
     async def on_enter(self) -> None:
         """Greet the caller warmly and immediately as soon as the call connects."""
         self.session.say(
-            "Hi there! Thanks for calling our 24/7 Home Service desk, this is Aria—how can I help with your home or property today?"
+            "Hi there! Thanks for calling Scottsdale Premier Auto Studio, this is Aria—how can I help with your vehicle or booking today?"
         )
 
 
@@ -107,20 +111,19 @@ class SmartBusinessVoiceAgent(Agent):
         context: RunContext,
         service_name: str,
         preferred_date: str = "today",
-        suburb_or_location: str = "",
+        suburb_or_location: str = "Scottsdale",
     ) -> str:
         """
-        Check available appointment slots for a trade service and location.
+        Check available appointment slots for a service and location.
 
         Args:
-            service_name: Name of the trade service or issue (e.g., air conditioning repair, leaking pipe, electrical fault)
-            preferred_date: Date requested by caller (e.g., today, tomorrow, Friday)
-            suburb_or_location: Caller's suburb, area, or locality
+            service_name: Name of the service (e.g. PPF, ceramic coating, window tint, detailing, trade service)
+            preferred_date: Date requested by caller (e.g. today, tomorrow, Friday)
+            suburb_or_location: Caller's area or locality (defaults to Scottsdale)
         """
-        logger.info(f"Checking trade availability for {service_name} in '{suburb_or_location}' on {preferred_date}")
-        area_str = f" around {suburb_or_location}" if suburb_or_location else ""
+        logger.info(f"Checking availability for {service_name} in '{suburb_or_location}' on {preferred_date}")
         return (
-            f"We have technicians available{area_str} on {preferred_date} with time slots at "
+            f"We have open bays available on {preferred_date} with time slots at "
             f"2:30 PM today or tomorrow at 9:00 AM. Ask the caller which of these two works better."
         )
 
@@ -131,23 +134,25 @@ class SmartBusinessVoiceAgent(Agent):
         customer_name: str,
         phone_number: str,
         service_name: str,
-        suburb_or_location: str,
         appointment_date: str,
         appointment_time: str,
+        vehicle_model: str = "",
+        suburb_or_location: str = "Scottsdale",
     ) -> str:
         """
-        Book a trade service appointment and dispatch the job details to the lead technician.
+        Book a service appointment and dispatch the qualified lead details to the lead specialist.
 
         Args:
             customer_name: Full name or first name of the customer
             phone_number: Contact phone number of the customer
-            service_name: Type of trade issue or service (e.g., aircon repair, leaking pipe, electrical fault, pest control)
-            suburb_or_location: Suburb, area, villa, or locality where service is required
-            appointment_date: Date of appointment (e.g., today, tomorrow, 15th October)
-            appointment_time: Preferred time slot (e.g., 2:30 PM, 9:00 AM)
+            service_name: Type of service (e.g. Full Front PPF, Ceramic Coating, Window Tint, Detailing, AC Repair)
+            appointment_date: Date of appointment (e.g. Today, Tomorrow, Friday)
+            appointment_time: Preferred time slot (e.g. 2:30 PM, 9:00 AM)
+            vehicle_model: Make, model, and year of the vehicle (e.g. 2024 Porsche GT3, Tesla Model S) or property type
+            suburb_or_location: Location or suburb (defaults to Scottsdale)
         """
         logger.info(
-            f"Booking trade job for {customer_name} ({phone_number}) in {suburb_or_location} - "
+            f"Booking appointment for {customer_name} ({phone_number}) - Vehicle: {vehicle_model} - "
             f"{service_name} on {appointment_date} at {appointment_time}"
         )
         room_name = ""
@@ -157,18 +162,20 @@ class SmartBusinessVoiceAgent(Agent):
         record = {
             "customer_name": customer_name,
             "phone_number": phone_number,
+            "vehicle_model": vehicle_model or "N/A",
             "service_name": service_name,
             "suburb_or_location": suburb_or_location,
             "date": appointment_date,
             "time": appointment_time,
             "booked_at": datetime.now().isoformat(),
-            "status": "DISPATCHED",
+            "status": "CONFIRMED",
             "room": room_name,
         }
         save_appointment_record(record)
+        car_str = f" for your {vehicle_model}" if vehicle_model else ""
         return (
-            f"Job booked successfully for {customer_name} in {suburb_or_location} on {appointment_date} "
-            f"at {appointment_time} for {service_name}. A live dispatch SMS notification has been sent to the lead technician."
+            f"Appointment booked successfully for {customer_name}{car_str} on {appointment_date} "
+            f"at {appointment_time} for {service_name}. A live confirmation and lead dispatch has been sent."
         )
 
     @function_tool
@@ -238,9 +245,13 @@ async def entrypoint(ctx: JobContext) -> None:
         # Silero VAD provides instant interruption detection (Barge-in)
         vad=silero.VAD.load(),
         turn_handling=TurnHandlingOptions(
+            endpointing={
+                "mode": "fixed",
+                "min_delay": 0.5,
+            },
             interruption={
                 "resume_false_interruption": True,
-                "false_interruption_timeout": 1.0,
+                "false_interruption_timeout": 0.8,
             },
             preemptive_generation={"enabled": True, "max_retries": 3},
         ),
